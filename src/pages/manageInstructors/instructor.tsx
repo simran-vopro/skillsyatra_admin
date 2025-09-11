@@ -1,19 +1,26 @@
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
+import moment from "moment";
+
 import { GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import { Avatar, Box, IconButton, Switch, Tooltip } from "@mui/material";
 import { Edit2, Eye, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+
 import Input from "../../components/form/input/InputField";
 import Button from "../../components/ui/button/Button";
 import DataTable from "../../components/common/DataTable";
-import { useNavigate } from "react-router";
-import { Course } from "../../types/course";
-import { useCourseList } from "../../hooks/userCourseList";
-import moment from "moment";
-import { useAxios } from "../../hooks/useAxios";
-import { API_PATHS, IMAGE_URL } from "../../utils/config";
 import ConfirmModal from "../../components/common/ConfirmModal";
 
-export default function CourseManagement() {
+
+
+import { useAxios } from "../../hooks/useAxios";
+import { useInstructorList } from "../../hooks/userInstructorList";
+
+import { API_PATHS, IMAGE_URL } from "../../utils/config";
+import { Instructor } from "../../types/course";
+
+
+export default function InstructorManagement() {
     const navigate = useNavigate();
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -23,13 +30,11 @@ export default function CourseManagement() {
         page: 0,
     });
 
-    const { courseData, refetch, metaData, loading } = useCourseList();
-
-    console.log("courseData ==> ", courseData);
+    const { instructorData, refetch, metaData, loading } = useInstructorList();
 
     // Modal state
-    const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
-    const [statusChangeCourse, setStatusChangeCourse] = useState<Course | null>(null);
+    const [deleteCourse, setDeleteCourse] = useState<Instructor | null>(null);
+    const [statusChangeCourse, setStatusChangeCourse] = useState<Instructor | null>(null);
 
 
     // ========================================> handle delete
@@ -54,7 +59,7 @@ export default function CourseManagement() {
     } = useAxios({
         url: statusChangeCourse ? `${API_PATHS.COURSE_VISIBILITY}/${statusChangeCourse._id}` : "",
         method: "put",
-        body: { status: !statusChangeCourse?.status },
+        body: { isActive: !statusChangeCourse?.isActive },
         manual: true,
     });
 
@@ -97,46 +102,28 @@ export default function CourseManagement() {
                     </>
                 )
             },
-            { field: "title", headerName: "Course Title", width: 220 },
-            { field: "language", headerName: "Language", width: 120 },
             {
-                field: "pricingType",
-                headerName: "Type",
-                width: 100,
-                renderCell: (params) => (
-                    <Box
-                        px={1}
-                        py={0.5}
-                        bgcolor={params.value === "free" ? "success.light" : "warning.light"}
-                        color="black"
-                        borderRadius="8px"
-                        textTransform="capitalize"
-                    >
-                        {params.value}
-                    </Box>
-                ),
+                field: "userId",
+                headerName: "User Id",
+                width: 150,
             },
             {
-                field: "pricing",
-                headerName: "Price",
-                width: 100,
-                renderCell: (params) => params.row.pricingType === "paid" ? `$${params.value}` : "Free",
+                field: "firstName", headerName: "Full Name", width: 150, renderCell: (params) => (
+                    <>
+                        {`${params.row.firstName} ${params.row.lastName}`}
+                    </>
+                )
             },
+            { field: "email", headerName: "Email", width: 200 },
             {
-                field: "instructor",
-                headerName: "Instructor",
-                width: 160,
-                renderCell: (params) =>
-                    `${params.row.instructor?.firstName || ""} ${params.row.instructor?.lastName || ""}`,
+                field: "phone",
+                headerName: "Phone",
+                width: 150,
             },
+
+
             {
-                field: "category",
-                headerName: "Category",
-                width: 140,
-                renderCell: (params) => <>{params.row.category?.name || "—"}</>,
-            },
-            {
-                field: "status",
+                field: "isActive",
                 headerName: "Visibility",
                 width: 100,
                 align: "center",
@@ -152,12 +139,10 @@ export default function CourseManagement() {
                 ),
             },
             {
-                field: "courseStatus",
-                headerName: "Status",
-                width: 100,
-                align: "center",
-                headerAlign: "center",
-                renderCell: (params) => <p className="capitalize">{params.value || "—"}</p>,
+                field: "address",
+                headerName: "Address",
+                width: 150,
+
             },
             {
                 field: "actions",
@@ -173,7 +158,7 @@ export default function CourseManagement() {
                                 color="primary"
                                 size="small"
                                 onClick={() =>
-                                    navigate("/addCourse", { state: { courseId: params.row._id } })
+                                    navigate("/addInstructor", { state: { courseId: params.row._id } })
                                 }
                             >
                                 <Eye size={16} />
@@ -184,7 +169,7 @@ export default function CourseManagement() {
                                 color="primary"
                                 size="small"
                                 onClick={() =>
-                                    navigate("/addCourse", { state: { courseId: params.row._id } })
+                                    navigate("/addInstructor", { state: { courseId: params.row._id } })
                                 }
                             >
                                 <Edit2 size={16} />
@@ -207,14 +192,14 @@ export default function CourseManagement() {
                 headerClassName: "actions-column-sticky",
             },
         ],
-        [courseData]
+        [instructorData]
     );
 
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                    Manage Courses
+                    Manage Instructors
                 </h2>
                 <div className="flex items-center gap-3">
                     <div>
@@ -230,10 +215,10 @@ export default function CourseManagement() {
                         variant="primary"
                         size="sm"
                         onClick={() => {
-                            navigate("/addCourse")
+                            navigate("/addInstructor")
                         }}
                     >
-                        Add New Course
+                        Add New Instructor
                     </Button>
 
                     {/* <Button variant="outline" size="sm" onClick={() => setCsvModalOpen(true)}>
@@ -243,7 +228,7 @@ export default function CourseManagement() {
             </div>
 
             <DataTable
-                rows={courseData || []}
+                rows={instructorData || []}
                 rowCount={metaData?.total || 0}
                 pagination
                 paginationMode="server"
@@ -260,7 +245,7 @@ export default function CourseManagement() {
                 onClose={() => setDeleteCourse(null)}
                 onConfirm={() => deleteCourse && handleDelete()}
                 title="Confirm Delete Course"
-                description={`Are you sure you want to delete this course "${deleteCourse?.title}"?`}
+                description={`Are you sure you want to delete this instructor "${deleteCourse?.firstName}"?`}
             />
 
             {/* Confirm Status Change Modal */}
@@ -272,8 +257,8 @@ export default function CourseManagement() {
                 description={
                     <>
                         Are you sure you want to{" "}
-                        <strong>{statusChangeCourse?.status ? "deactivate" : "activate"}</strong>{" "}
-                        course <strong>{statusChangeCourse?.title}</strong>?
+                        <strong>{statusChangeCourse?.isActive ? "deactivate" : "activate"}</strong>{" "}
+                        instructor <strong>{statusChangeCourse?.firstName} {statusChangeCourse?.lastName}</strong>?
                     </>
                 }
             />

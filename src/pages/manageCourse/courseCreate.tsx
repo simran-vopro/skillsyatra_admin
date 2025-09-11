@@ -1,59 +1,47 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
 import Input from "../../components/form/input/InputField";
 import TextArea from "../../components/form/input/TextArea";
 import Select from "../../components/form/input/SelectField";
 import Button from "../../components/ui/button/Button";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
 
 import { useAxios } from "../../hooks/useAxios";
-import { API_PATHS } from "../../utils/config";
+import { API_PATHS, IMAGE_URL } from "../../utils/config";
 import Label from "../../components/form/Label";
 import { CategoryType, Course, Instructor } from "../../types/course";
 
 import DropzoneComponent from "../../components/form/form-elements/DropZone";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+import TextEditor from "../texteditor";
 
-const modules = {
-  toolbar: {
-    container: [
-      [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image", "video", "table"],
-      [{ align: [] }],
-      [{ color: [] }, { background: [] }],
-      ["clean"],
-    ],
-  },
+
+const enhanceListStyling = (html: string) => {
+  return html
+    .replace(/<ol([^>]*)>/g, '<ol class="list-decimal ml-6"$1>')
+    .replace(/<ul([^>]*)>/g, '<ul class="list-disc ml-6"$1>');
 };
 
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "list",
-  "bullet",
-  "link",
-  "image",
-  "video",
-  "align",
-  "color",
-  "background",
-  "table",
-];
+export const RenderHtmlContent = ({ html }: { html: string }) => {
+  const processedHtml = enhanceListStyling(html);
+
+  return (
+    <div
+      dangerouslySetInnerHTML={{ __html: processedHtml }}
+    />
+  );
+}
 
 export default function CourseCreate() {
+
+  const { adminToken } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [activeTab, setActiveTab] = useState<"mcq" | "yesno" | "blank">("mcq");
 
   const [course, setCourse] = useState<Course>({
     createdBy: "admin",
-    title: "Mastering Communication Skills",
+    title: "",
     thumbnail: "",
     promoVideo:
       "https://dm0qx8t0i9gc9.cloudfront.net/watermarks/video/rMadI-Zz9l0vd44f0/videoblocks-web-development_sk0c_cpra__4f01f9139763fa3bae63e48025ef7f14__P360.mp4",
@@ -64,17 +52,17 @@ export default function CourseCreate() {
     pricing: 100,
     category: {
       _id: "",
-      name: "Communication",
+      name: "",
     },
     instructor: {
       _id: "",
       email: "",
       password: "",
       phone: "",
-      firstName: "Jane",
-      lastName: "Doe",
-      address: "123 Learning Street",
-      city: "New Delhi",
+      firstName: "",
+      lastName: "",
+      address: "",
+      city: "",
     },
     whatYouLearn:
       "<ol><li>- Understand different forms of communication</li><li>- Develop effective listening and speaking techniques</li><li>- Communicate with confidence in a variety of settings</li><li>- Write clear and professional emails</li></ol>",
@@ -381,7 +369,31 @@ export default function CourseCreate() {
     ],
   });
 
-  const buildCourseFormData = (course: Course) => {
+  // this is came from the edit button from the course list to edit course
+
+  const location = useLocation();
+  const { courseId } = location.state || {};
+
+  const {
+    data: courseData,
+    loading: courseDefaultLoading
+  } = useAxios({
+    url: courseId ? `${API_PATHS.COURSE_DETAIL}/${courseId}` : "",
+    method: "get",
+  });
+
+  useEffect(() => {
+    if (!courseDefaultLoading && courseData) {
+      setCourse(courseData);
+    }
+  }, [courseData, courseDefaultLoading]);
+
+  // this is came from the edit button from the course list to edit course
+
+
+  const buildCourseFormData = (course: Course, courseStatus: string) => {
+
+    console.log("courseStatus ==> ", courseStatus);
     const formData = new FormData();
 
     // Top-level fields
@@ -392,7 +404,8 @@ export default function CourseCreate() {
     formData.append("language", course.language);
     formData.append("pricingType", course.pricingType);
     formData.append("pricing", course.pricing.toString());
-    formData.append("certificate", course.certificate.toString());
+    formData.append("courseStatus", courseStatus);
+    formData.append("certificate", course.certificate?.toString());
 
     // Thumbnail (file or string)
     if (typeof course.thumbnail === "string") {
@@ -477,7 +490,6 @@ export default function CourseCreate() {
     return formData;
   };
 
-  const { adminToken } = useAuth();
   const { loading: addLoading, refetch: addCourseRequest } = useAxios({
     url: API_PATHS.ADD_COURSE,
     method: "post",
@@ -491,13 +503,82 @@ export default function CourseCreate() {
     },
   });
 
-  const navigate = useNavigate();
-  const handleSubmit = async () => {
-    const formData = buildCourseFormData(course);
+  //draft edit api
+  const {
+    // loading: editLoading,
+    refetch: editCourseRequest,
+  } = useAxios({
+    url: `${API_PATHS.EDIT_COURSE}/${course._id}`,
+    method: "put",
+    manual: true,
+    config: {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      Authorization: adminToken ? `Bearer ${adminToken}` : "",
+    }
+  });
 
-    const { success } = await addCourseRequest({ body: formData });
+  const saveDraft = async (event?: Event) => {
+    event?.preventDefault();
+    const courseStatus = course?.courseStatus === "published" ? "published" : "draft"
+    const formData = buildCourseFormData(course, courseStatus);
+
+    // Choose correct endpoint based on _id
+    const apiCall = course._id ? editCourseRequest : addCourseRequest;
+
+    const { success, data } = await apiCall({ body: formData });
+    console.log(success, data)
+
+    if (success && data?._id && !course._id) {
+      setCourse((prev) => ({
+        ...prev,
+        _id: data._id,
+      }));
+    }
+  };
+
+  useEffect(() => {
+    if (!course?.instructor || !course.title.trim() || !course?.category) return;
+
+    const timeoutId = setTimeout(() => {
+      saveDraft();
+    }, 800); // 800ms debounce delay
+
+    return () => clearTimeout(timeoutId); // Clear if effect re-runs before timeout finishes
+  }, [course.instructor, course.title, course.category, course]);
+
+
+  const isCourseValid = () => {
+    return course.title.trim() !== "" && course.modules.length > 0;
+  };
+
+  const handleSubmit = async () => {
+    const updatedCourse = { ...course };
+
+    // If not saving as draft, validate the form
+    if (!isCourseValid()) {
+      alert("Please complete all required fields.");
+      return;
+    }
+
+    const formData = buildCourseFormData(updatedCourse, "published");
+
+    let response;
+
+    if (course._id) {
+      // Editing existing course
+      response = await editCourseRequest({ body: formData });
+    } else {
+      // Creating new course
+      response = await addCourseRequest({ body: formData });
+    }
+
+    const { success } = response;
+
     if (success) {
       navigate("/courses");
+      // Clear form
       setCourse({
         createdBy: "admin",
         title: "",
@@ -548,8 +629,8 @@ export default function CourseCreate() {
     method: "get",
   });
 
-  const [showInstructorSuggestions, setShowInstructorSuggestions] =
-    useState(false);
+  const [showInstructorSuggestions, setShowInstructorSuggestions] = useState(false);
+
   const filteredInstructors = useMemo(() => {
     const search = course.instructor.firstName.toLowerCase();
     return (
@@ -589,6 +670,7 @@ export default function CourseCreate() {
       {/* Step Tabs */}
       <div className="flex space-x-2 text-xs font-semibold ">
         {[
+          "Instructor",
           "Category",
           "Basic",
           "Curriculum",
@@ -598,11 +680,10 @@ export default function CourseCreate() {
         ].map((label, i) => (
           <button
             key={i}
-            className={`px-3 py-1 border flex items-center space-x-1 rounded-2xl ${
-              step === i + 1
-                ? "bg-sky-600 text-white"
-                : "bg-gray-100 dark:bg-gray-700"
-            }`}
+            className={`px-3 py-1 border flex items-center space-x-1 rounded-2xl ${step === i + 1
+              ? "bg-sky-600 text-white"
+              : "bg-gray-100 dark:bg-gray-700"
+              }`}
             onClick={() => setStep(i + 1)}
           >
             <span>{i + 1}.</span>
@@ -619,122 +700,9 @@ export default function CourseCreate() {
         />
       </div>
 
-      {/* Step 1: Category */}
+
       {step === 1 && (
         <section className="rounded-xl p-4  bg-white dark:bg-black text-xs space-y-2">
-          <Label>Category</Label>
-          <div className="relative">
-            <input
-              type="text"
-              className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder="Start typing a user's name..."
-              value={course.category.name}
-              onChange={(e) => {
-                const value = e.target.value;
-
-                if (value.trim() === "") {
-                  // If input is cleared, reset the entire customer form
-                  setCourse({ ...course, category: { name: "" } }),
-                    setShowSuggestions(false);
-                } else {
-                  setCourse({ ...course, category: { name: value } });
-                  setShowSuggestions(true);
-                }
-              }}
-              onFocus={() => setShowSuggestions(true)}
-            />
-            {showSuggestions && filteredCategories.length > 0 && (
-              <ul className="absolute z-10 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 mt-1 rounded max-h-40 overflow-y-auto w-full text-sm">
-                {filteredCategories.map((category: CategoryType) => (
-                  <li
-                    key={category._id}
-                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
-                    onClick={() => {
-                      setCourse({
-                        ...course,
-                        category: {
-                          _id: category._id, // ✅ Add this
-                          name: category.name,
-                        },
-                      });
-                      setShowSuggestions(false);
-                    }}
-                  >
-                    {category?.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
-      )}
-
-      {step === 2 && (
-        <section className="rounded-xl  bg-white dark:bg-black p-4 text-xs space-y-2">
-          {[
-            { label: "Title", value: course.title, field: "title" },
-            {
-              label: "Short Description",
-              value: course.description,
-              field: "description",
-              type: "textarea",
-            },
-            { label: "Language", value: course.language, field: "language" },
-            {
-              label: "Thumbnail URL",
-              value: course.thumbnail,
-              field: "thumbnail",
-              type: "image",
-            },
-            {
-              label: "Promo Video",
-              value: course.promoVideo,
-              field: "promoVideo",
-            },
-          ].map(({ label, value, field, type }) => {
-            const normalizedValue =
-              typeof value === "string" ? value : URL.createObjectURL(value);
-
-            return (
-              <div key={field}>
-                <Label>{label}</Label>
-                {type === "textarea" ? (
-                  <TextArea
-                    placeholder={label}
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(v) => setCourse({ ...course, [field]: v })}
-                  />
-                ) : type === "image" ? (
-                  <DropzoneComponent
-                    accept={{ "image/*": [".jpg", ".jpeg", ".png"] }}
-                    label="Upload Thumbnail Image"
-                    helperText="Only .jpg, .jpeg, or .png files are supported"
-                    previewFile={normalizedValue}
-                    onDrop={(files: File[]) => {
-                      const file = files[0];
-                      setCourse({ ...course, thumbnail: file });
-                    }}
-                  />
-                ) : (
-                  <Input
-                    placeholder={label}
-                    value={typeof value === "string" ? value : ""}
-                    onChange={(e) =>
-                      setCourse({ ...course, [field]: e.target.value })
-                    }
-                  />
-                )}
-              </div>
-            );
-          })}
-
-          {/* <Label>Instructor</Label>
-                    <Select
-                        placeholder="Instructor"
-                        options={[{ value: "1", label: "John" }]}
-                        value={course.instructor.firstName}
-                        onChange={(v) => setCourse({ ...course, instructor: { ...course.instructor, firstName: v } })}
-                    /> */}
 
           <div className="pt-4 space-y-2">
             <Label className="font-bold text-sm">Instructor Details</Label>
@@ -826,14 +794,123 @@ export default function CourseCreate() {
               </div>
             ))}
           </div>
+        </section>
+      )}
 
-          {/* <Button variant="outline" onClick={() => toast.success("Draft saved!")}>
-                        Save Draft
-                    </Button> */}
+      {/* Step 2: Category */}
+      {step === 2 && (
+        <section className="rounded-xl p-4  bg-white dark:bg-black text-xs space-y-2">
+          <Label>Category</Label>
+          <div className="relative">
+            <input
+              type="text"
+              className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="Start typing a user's name..."
+              value={course.category.name}
+              onChange={(e) => {
+                const value = e.target.value;
+
+                if (value.trim() === "") {
+                  // If input is cleared, reset the entire customer form
+                  setCourse({ ...course, category: { name: "" } }),
+                    setShowSuggestions(false);
+                } else {
+                  setCourse({ ...course, category: { name: value } });
+                  setShowSuggestions(true);
+                }
+              }}
+              onFocus={() => setShowSuggestions(true)}
+            />
+            {showSuggestions && filteredCategories.length > 0 && (
+              <ul className="absolute z-10 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 mt-1 rounded max-h-40 overflow-y-auto w-full text-sm">
+                {filteredCategories.map((category: CategoryType) => (
+                  <li
+                    key={category._id}
+                    className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                    onClick={() => {
+                      setCourse({
+                        ...course,
+                        category: {
+                          _id: category._id, // ✅ Add this
+                          name: category.name,
+                        },
+                      });
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    {category?.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
       )}
 
       {step === 3 && (
+        <section className="rounded-xl  bg-white dark:bg-black p-4 text-xs space-y-2">
+          {[
+            { label: "Title", value: course.title, field: "title" },
+            {
+              label: "Short Description",
+              value: course.description,
+              field: "description",
+              type: "textarea",
+            },
+            { label: "Language", value: course.language, field: "language" },
+            {
+              label: "Thumbnail URL",
+              value: course.thumbnail,
+              field: "thumbnail",
+              type: "image",
+            },
+            {
+              label: "Promo Video",
+              value: course.promoVideo,
+              field: "promoVideo",
+            },
+          ].map(({ label, value, field, type }) => {
+            const normalizedValue = typeof value === "string" ? value : URL.createObjectURL(value);
+
+            return (
+              <div key={field}>
+                <Label>{label}</Label>
+                {type === "textarea" ? (
+                  <TextArea
+                    placeholder={label}
+                    value={typeof value === "string" ? value : ""}
+                    onChange={(v) => setCourse({ ...course, [field]: v })}
+                  />
+                ) : type === "image" ? (
+                  <DropzoneComponent
+                    accept={{ "image/*": [".jpg", ".jpeg", ".png"] }}
+                    label="Upload Thumbnail Image"
+                    helperText="Only .jpg, .jpeg, or .png files are supported"
+                    previewFile={(typeof value === "string" && value.startsWith("/uploads")) ? IMAGE_URL + value : normalizedValue}
+                    onDrop={(files: File[]) => {
+                      const file = files[0];
+                      setCourse({ ...course, thumbnail: file });
+                    }}
+                  />
+                ) : (
+                  <Input
+                    placeholder={label}
+                    value={typeof value === "string" ? value : ""}
+                    onChange={(e) =>
+                      setCourse({ ...course, [field]: e.target.value })
+                    }
+                  />
+                )}
+              </div>
+            );
+          })}
+          {/* <Button onClick={saveDraft} className="mt-5 bg-red-400">
+            Save Draft <ChevronRight size={12} />
+          </Button> */}
+        </section>
+      )}
+
+      {step === 4 && (
         <section className="rounded-xl p-4 bg-white dark:bg-black text-xs space-y-4">
           {course.modules.map((mod, mIdx) => (
             <details
@@ -915,7 +992,7 @@ export default function CourseCreate() {
                       />
 
                       <Label>Description</Label>
-                      <ReactQuill
+                      {/* <ReactQuill
                         theme="snow"
                         value={ch.description || ""}
                         onChange={(v) => {
@@ -927,7 +1004,15 @@ export default function CourseCreate() {
                         style={{ height: 400 }}
                         modules={modules}
                         formats={formats}
-                      />
+                      /> */}
+
+                      <TextEditor
+                        value={enhanceListStyling(ch.description) || ""}
+                        onChange={(v) => {
+                          const mods = [...course.modules];
+                          mods[mIdx].chapters[cIdx].description = enhanceListStyling(v);
+                          setCourse({ ...course, modules: mods });
+                        }} />
 
                       <Label>Video URL</Label>
                       <Input
@@ -948,7 +1033,7 @@ export default function CourseCreate() {
                         }}
                         label="Upload Audio"
                         helperText="Only .mp3, .wav, .m4a, .aac, or .ogg files are supported"
-                        previewFile={ch.audio}
+                        previewFile={(typeof ch.audio === "string" && ch.audio.startsWith("/uploads")) ? IMAGE_URL + ch.audio : ch.audio}
                         onDrop={(files: File[]) => {
                           const mods = [...course.modules];
                           mods[mIdx].chapters[cIdx].audio = files[0];
@@ -961,7 +1046,7 @@ export default function CourseCreate() {
                         accept={{ "image/*": [".jpg", ".jpeg", ".png"] }}
                         label="Upload Image"
                         helperText="Only .jpg, .jpeg, or .png files are supported"
-                        previewFile={ch.image}
+                        previewFile={(typeof ch.image === "string" && ch.image.startsWith("/uploads")) ? IMAGE_URL + ch.image : ch.image}
                         onDrop={(files: File[]) => {
                           const mods = [...course.modules];
                           mods[mIdx].chapters[cIdx].image = files[0];
@@ -994,17 +1079,16 @@ export default function CourseCreate() {
                                         tab as "mcq" | "yesno" | "blank"
                                       )
                                     }
-                                    className={`px-3 py-1 rounded-md text-sm font-medium capitalize ${
-                                      activeTab === tab
-                                        ? "bg-orange-600 text-white"
-                                        : "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-white"
-                                    }`}
+                                    className={`px-3 py-1 rounded-md text-sm font-medium capitalize ${activeTab === tab
+                                      ? "bg-orange-600 text-white"
+                                      : "bg-orange-100 dark:bg-orange-800 text-orange-800 dark:text-white"
+                                      }`}
                                   >
                                     {tab === "mcq"
                                       ? "MCQ"
                                       : tab === "yesno"
-                                      ? "Yes / No"
-                                      : "Blank"}
+                                        ? "Yes / No"
+                                        : "Blank"}
                                   </button>
                                 ))}
                               </div>
@@ -1037,14 +1121,12 @@ export default function CourseCreate() {
                                             className="relative"
                                           >
                                             <Input
-                                              className={`dark:bg-gray-900 pr-10 ${
-                                                opt.name === q.answer
-                                                  ? "border-2 border-green-500 ring-2 ring-green-300 dark:ring-green-700"
-                                                  : ""
-                                              }`}
-                                              placeholder={`Option ${
-                                                optIdx + 1
-                                              }`}
+                                              className={`dark:bg-gray-900 pr-10 ${opt.name === q.answer
+                                                ? "border-2 border-green-500 ring-2 ring-green-300 dark:ring-green-700"
+                                                : ""
+                                                }`}
+                                              placeholder={`Option ${optIdx + 1
+                                                }`}
                                               value={opt.name}
                                               onChange={(e) => {
                                                 const mods = [
@@ -1346,70 +1428,66 @@ export default function CourseCreate() {
       )}
 
       {/* Step 4: Metadata */}
-      {step === 4 && (
+      {step === 5 && (
         <section className="rounded-xl  bg-white dark:bg-black p-4 text-xs space-y-4">
           <div className="flex flex-col col-span-full mb-15">
             <Label>
               What You’ll Learn <span className="text-error-500">*</span>
             </Label>
-            <ReactQuill
-              theme="snow"
-              value={course.whatYouLearn}
+
+            <TextEditor value={enhanceListStyling(course.whatYouLearn)}
               onChange={(value) =>
-                setCourse({ ...course, whatYouLearn: value })
-              }
-              placeholder="Describe what students will learn in this course"
-              style={{ height: "200px" }}
-            />
+                setCourse({ ...course, whatYouLearn: enhanceListStyling(value) })
+              } />
           </div>
 
           <div className="flex flex-col col-span-full mb-15">
             <Label>
               Course Includes <span className="text-error-500">*</span>
             </Label>
-            <ReactQuill
-              theme="snow"
-              value={course.courseInclude}
+
+            <TextEditor value={enhanceListStyling(course.courseInclude)}
               onChange={(value) =>
                 setCourse({ ...course, courseInclude: value })
               }
-              placeholder="List what’s included (e.g. videos, PDFs, quizzes)"
-              style={{ height: "200px" }}
             />
+
           </div>
 
           <div className="flex flex-col col-span-full mb-15">
             <Label>
               Target Audience <span className="text-error-500">*</span>
             </Label>
-            <ReactQuill
-              theme="snow"
-              value={course.audience}
-              onChange={(value) => setCourse({ ...course, audience: value })}
+
+
+
+            <TextEditor
               placeholder="Who is this course for?"
-              style={{ height: "200px" }}
+              value={enhanceListStyling(course.audience)}
+              onChange={(value) => setCourse({ ...course, audience: enhanceListStyling(value) })}
             />
+
           </div>
 
           <div className="flex flex-col col-span-full mb-15">
             <Label>
               Requirements <span className="text-error-500">*</span>
             </Label>
-            <ReactQuill
-              theme="snow"
-              value={course.requirements}
+
+            <TextEditor
+              value={enhanceListStyling(course.requirements)}
               onChange={(value) =>
-                setCourse({ ...course, requirements: value })
+                setCourse({ ...course, requirements: enhanceListStyling(value) })
               }
               placeholder="What are the prerequisites for this course?"
-              style={{ height: "200px" }}
             />
+
           </div>
 
           <Label className="flex items-center space-x-2">
             <input
               type="checkbox"
-              checked={course.certificate ?? false}
+              checked={course.certificate}
               onChange={(e) =>
                 setCourse({
                   ...course,
@@ -1422,7 +1500,7 @@ export default function CourseCreate() {
         </section>
       )}
 
-      {step === 5 && (
+      {step === 6 && (
         <section className="rounded-xl p-4 bg-white dark:bg-black text-xs space-y-2">
           <Label>
             Pricing Type <span className="text-error-500">*</span>
@@ -1450,7 +1528,7 @@ export default function CourseCreate() {
         </section>
       )}
 
-      {step === 6 && course && (
+      {step === 7 && course && (
         <section className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800 text-sm space-y-6">
           <h2 className="text-xl font-semibold border-b pb-2">
             Course Overview
@@ -1527,10 +1605,12 @@ export default function CourseCreate() {
           ].map(({ title, html }) => (
             <div key={title}>
               <h3 className="text-md font-semibold border-b mb-2">{title}</h3>
-              <div
+              {/* <div
                 className="prose dark:prose-invert max-w-full text-sm border rounded p-3 bg-white dark:bg-slate-700"
                 dangerouslySetInnerHTML={{ __html: html }}
-              />
+              /> */}
+              <RenderHtmlContent html={html} />
+
             </div>
           ))}
 
@@ -1554,10 +1634,13 @@ export default function CourseCreate() {
                       <p className="font-medium">
                         Chapter {j + 1}: {ch.title}
                       </p>
-                      <div
+
+                      {/* <div
                         className="prose dark:prose-invert text-sm"
                         dangerouslySetInnerHTML={{ __html: ch.description }}
-                      />
+                      /> */}
+
+                      <RenderHtmlContent html={ch.description} />
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-5">
                         <div className="border rounded-lg p-2 bg-white dark:bg-slate-700">

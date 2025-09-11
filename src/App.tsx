@@ -9,8 +9,11 @@ import { Toaster } from 'react-hot-toast';
 
 import CourseManagement from "./pages/manageCourse/courses";
 
-import EditCourse from "./pages/manageCourse/editCourse";
+// import EditCourse from "./pages/manageCourse/editCourse";
 import CourseCreate from "./pages/manageCourse/courseCreate";
+import Tiptap from "./Tiptap";
+import InstructorManagement from "./pages/manageInstructors/instructor";
+import InstructorCreate from "./pages/manageInstructors/instructorCreate";
 
 
 export default function App() {
@@ -19,14 +22,19 @@ export default function App() {
       <Toaster containerStyle={{ zIndex: 999999999999 }} position="top-right" />
       <ScrollToTop />
       <Routes>
+        <Route index path="/Texteditor" element={<Tiptap />} />
         {/* Protected Admin Routes */}
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
+
             <Route index path="/" element={<Home />} />
 
             <Route path="/courses" element={<CourseManagement />} />
             <Route path="/addCourse" element={<CourseCreate />} />
-            <Route path="/editCourse" element={<EditCourse />} />
+            {/* <Route path="/editCourse" element={<EditCourse />} /> */}
+
+            <Route path="/instructors" element={<InstructorManagement />} />
+            <Route path="/addInstructor" element={<InstructorCreate />} />
 
 
           </Route>

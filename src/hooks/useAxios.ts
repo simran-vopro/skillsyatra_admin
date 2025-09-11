@@ -32,7 +32,7 @@ export const useAxios = <T = any>({
     const [anotherdata, setAnotherData] = useState<MetaData | null>(null);
     const { adminToken } = useAuth();
 
-    const fetchData = async (overrides?: Partial<UseAxiosOptions>): Promise<{ success: boolean }> => {
+    const fetchData = async (overrides?: Partial<UseAxiosOptions>): Promise<{ success: boolean, data?: any }> => {
 
         setLoading(true);
         try {
@@ -75,7 +75,7 @@ export const useAxios = <T = any>({
                 toast.success(response.data?.message || "Operation successful");
             }
 
-            return { success: true };
+         return { success: true, data: response.data?.data };
         } catch (err: any) {
             console.log("error ==> ", error)
             const errMsg = err.response?.data?.message || "Something went wrong";

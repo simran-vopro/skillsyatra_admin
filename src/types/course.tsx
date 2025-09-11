@@ -1,4 +1,5 @@
 export type Instructor = {
+  userId?: string;
   _id?: string;
   email: string;
   password: string;
@@ -7,6 +8,10 @@ export type Instructor = {
   lastName: string;
   address: string;
   city: string;
+  isActive?: boolean;
+  profileImage?: string | File;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type CategoryType = {
@@ -63,4 +68,5 @@ export type Course = {
   status?: boolean;
   updatedAt?: string;
   createdAt?: string;
+  courseStatus?: string
 };
