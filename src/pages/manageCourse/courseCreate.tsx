@@ -780,7 +780,7 @@ export default function CourseCreate() {
                 <Input
                   type={type || "text"}
                   placeholder={label}
-                  value={course.instructor[field as keyof Instructor]}
+                  value={course.instructor[field as keyof Instructor] as string | number}
                   onChange={(e) =>
                     setCourse((prev) => ({
                       ...prev,

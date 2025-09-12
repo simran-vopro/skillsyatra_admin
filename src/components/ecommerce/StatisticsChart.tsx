@@ -25,7 +25,7 @@ export default function StatisticsChart() {
         setSeries(Array.isArray(data) ? data : data.series || []);
       })
       .catch((err) => {
-        console.error("Error fetching agent profit chart:", err);
+        console.error("Error fetching instructor profit chart:", err);
         setSeries([]);
       })
       .finally(() => {

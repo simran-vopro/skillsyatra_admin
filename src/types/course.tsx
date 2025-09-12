@@ -3,11 +3,12 @@ export type Instructor = {
   _id?: string;
   email: string;
   password: string;
+  confirmPassword?: string;
   phone: string;
   firstName: string;
   lastName: string;
   address: string;
-  city: string;
+  city?: string;
   isActive?: boolean;
   profileImage?: string | File;
   createdAt?: string;

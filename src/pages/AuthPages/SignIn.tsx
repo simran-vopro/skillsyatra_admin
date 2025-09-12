@@ -19,7 +19,8 @@ export default function SignIn() {
     if (adminToken) {
       try {
         const decoded: DecodedToken = jwtDecode(adminToken);
-        if (decoded?.type === "admin" || decoded?.type === "agent") {
+        console.log("Decoded token:", decoded);
+        if (decoded?.type === "instructor") {
           navigate("/");
         }
       } catch (err) {

@@ -23,5 +23,6 @@ export const API_PATHS = {
 
   //INSTRUCTORS
   INSTRUCTORS: `${BASE_URL}/api/instructor`,
+  ADD_INSTRUCTOR: `${BASE_URL}/api/instructor/add`,
 
 };

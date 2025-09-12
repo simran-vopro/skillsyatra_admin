@@ -11,8 +11,6 @@ import Button from "../../components/ui/button/Button";
 import DataTable from "../../components/common/DataTable";
 import ConfirmModal from "../../components/common/ConfirmModal";
 
-
-
 import { useAxios } from "../../hooks/useAxios";
 import { useInstructorList } from "../../hooks/userInstructorList";
 
@@ -36,7 +34,6 @@ export default function InstructorManagement() {
     const [deleteCourse, setDeleteCourse] = useState<Instructor | null>(null);
     const [statusChangeCourse, setStatusChangeCourse] = useState<Instructor | null>(null);
 
-
     // ========================================> handle delete
     const {
         refetch: deleteCourseById,
@@ -45,6 +42,7 @@ export default function InstructorManagement() {
         method: "delete",
         manual: true,
     });
+
     const handleDelete = async () => {
         await deleteCourseById();
         refetch();

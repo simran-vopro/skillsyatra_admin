@@ -25,6 +25,9 @@ export default function SignInForm() {
   // },[])
 
   const handleLogin = async (e: any) => {
+    console.log("Login clicked", phone,
+      password,
+      activeTab,);
     e.preventDefault();
 
     if (!phone || !password) {
