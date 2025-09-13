@@ -5,7 +5,7 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import PrivateRoute from "./components/routes/PrivateRoute";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 
 import CourseManagement from "./pages/manageCourse/courses";
 
@@ -14,7 +14,8 @@ import CourseCreate from "./pages/manageCourse/courseCreate";
 import Tiptap from "./Tiptap";
 import InstructorManagement from "./pages/manageInstructors/instructor";
 import InstructorCreate from "./pages/manageInstructors/instructorCreate";
-
+import TierPathwayControl from "./pages/manageTiers/tierPathwayControl";
+import PracticalCalendarManagement from "./pages/practicalManagement/PracticalCalendarManagement";
 
 export default function App() {
   return (
@@ -26,7 +27,6 @@ export default function App() {
         {/* Protected Admin Routes */}
         <Route element={<PrivateRoute />}>
           <Route element={<AppLayout />}>
-
             <Route index path="/" element={<Home />} />
 
             <Route path="/courses" element={<CourseManagement />} />
@@ -36,7 +36,8 @@ export default function App() {
             <Route path="/instructors" element={<InstructorManagement />} />
             <Route path="/addInstructor" element={<InstructorCreate />} />
 
-
+            <Route path="/tiers" element={<TierPathwayControl />} />
+            <Route path="/practicals" element={<PracticalCalendarManagement />} />
           </Route>
         </Route>
 

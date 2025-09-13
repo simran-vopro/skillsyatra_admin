@@ -58,8 +58,9 @@ const AppSidebar: React.FC = () => {
   const administration: NavItem[] = useMemo(
     () =>
       [
+        { icon: <TableIcon />, name: "Tier Pathway Control", path: "/tiers" },
         { icon: <TableIcon />, name: "Manage Sub Admins", path: "/subAdmins" },
-        { icon: <Calendar />, name: "Practical Scheduling", path: "/scheduling" },
+        { icon: <Calendar />, name: "Practical Scheduling", path: "/practicals" },
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
     [adminUser]
   );
