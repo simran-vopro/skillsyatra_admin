@@ -1,6 +1,6 @@
 import { useAxios } from "./useAxios";
 import { API_PATHS } from "../utils/config";
-import { Course } from "../types/course";
+import { Course, Instructor } from "../types/course";
 
 
 export interface PaginationModel {
@@ -26,7 +26,7 @@ export const useInstructorList = () => {
   //   return new URLSearchParams(params).toString();
   // }, [searchQuery, page, pageSize]);
 
-  const { data, metaData, loading, error, refetch } = useAxios<Course[]>({
+  const { data, metaData, loading, error, refetch } = useAxios<Instructor[]>({
     url: API_PATHS.INSTRUCTORS,
   });
 

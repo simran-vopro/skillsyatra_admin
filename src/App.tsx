@@ -15,7 +15,11 @@ import Tiptap from "./Tiptap";
 import InstructorManagement from "./pages/manageInstructors/instructor";
 import InstructorCreate from "./pages/manageInstructors/instructorCreate";
 import TierPathwayControl from "./pages/manageTiers/tierPathwayControl";
-import PracticalCalendarManagement from "./pages/practicalManagement/PracticalCalendarManagement";
+
+import StudentsManagement from "./pages/manageStudents/students";
+import PracticalCalendarManagement from "./pages/practicalManagement/practicalCalendarManagement";
+import StudentCreate from "./pages/manageStudents/studentCreate";
+import StudentDetails from "./pages/manageStudents/studentDetails";
 
 export default function App() {
   return (
@@ -38,6 +42,10 @@ export default function App() {
 
             <Route path="/tiers" element={<TierPathwayControl />} />
             <Route path="/practicals" element={<PracticalCalendarManagement />} />
+
+            <Route path="/students" element={<StudentsManagement />} />
+            <Route path="/studentCreate" element={<StudentCreate />} />
+            <Route path="/studentDetails" element={<StudentDetails />} />
           </Route>
         </Route>
 

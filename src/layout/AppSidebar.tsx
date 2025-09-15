@@ -48,7 +48,7 @@ const AppSidebar: React.FC = () => {
     () =>
       [
         { icon: <GridIcon />, name: "Dashboard", path: "/" },
-        { icon: <UserCircleIcon />, name: "Manage Students", path: "/users" },
+        { icon: <UserCircleIcon />, name: "Manage Students", path: "/students" },
         { icon: <GridIcon />, name: "Manage Courses", path: "/courses" },
         { icon: <TableIcon />, name: "Manage Instructors", path: "/instructors" },
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
