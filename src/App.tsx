@@ -20,6 +20,9 @@ import StudentsManagement from "./pages/manageStudents/students";
 import PracticalCalendarManagement from "./pages/practicalManagement/practicalCalendarManagement";
 import StudentCreate from "./pages/manageStudents/studentCreate";
 import StudentDetails from "./pages/manageStudents/studentDetails";
+import SubmissionPage from "./pages/manageStudents/submissionPage";
+import AdminManagement from "./pages/manageAdmins/admin";
+import SubAdminPermissions from "./pages/manageAdmins/permissions";
 
 export default function App() {
   return (
@@ -46,6 +49,10 @@ export default function App() {
             <Route path="/students" element={<StudentsManagement />} />
             <Route path="/studentCreate" element={<StudentCreate />} />
             <Route path="/studentDetails" element={<StudentDetails />} />
+            <Route path="/studentSubmissions" element={<SubmissionPage />} />
+
+            <Route path="/subAdmins" element={<AdminManagement />} />
+            <Route path="/managePermissions" element={<SubAdminPermissions />} />
           </Route>
         </Route>
 

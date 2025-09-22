@@ -128,95 +128,95 @@ export default function TierPathwayControl() {
     setErrors({});
   };
 
- // ======================= Columns =======================
-const tierColumns: GridColDef[] = useMemo(
-  () => [
-    {
-      field: "tierName",
-      headerName: "Tier Name",
-      flex: 1,
-    },
-    {
-      field: "courses",
-      headerName: "Courses Mapped",
-      flex: 1,
-      renderCell: (params) => (
-        <Box display="flex" gap={1} flexWrap="wrap">
-          {params.value.map((c: string, idx: number) => (
-            <Chip
-              key={idx}
-              label={c}
+  // ======================= Columns =======================
+  const tierColumns: GridColDef[] = useMemo(
+    () => [
+      {
+        field: "tierName",
+        headerName: "Tier Name",
+        flex: 1,
+      },
+      {
+        field: "courses",
+        headerName: "Courses Mapped",
+        flex: 1,
+        renderCell: (params) => (
+          <Box display="flex" gap={1} flexWrap="wrap">
+            {params.value.map((c: string, idx: number) => (
+              <Chip
+                key={idx}
+                label={c}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            ))}
+          </Box>
+        ),
+      },
+      {
+        field: "progression",
+        headerName: "Progression Rule",
+        flex: 1,
+      },
+      {
+        field: "locked",
+        headerName: "Visibility",
+        flex: 1,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+            {params.value ? (
+              <Lock className="text-red-500" size={18} />
+            ) : (
+              <Unlock className="text-green-500" size={18} />
+            )}
+            <Switch
+              checked={params.value}
+              onChange={() => handleToggleLock(params.row._id)}
               size="small"
-              color="primary"
-              variant="outlined"
             />
-          ))}
-        </Box>
-      ),
-    },
-    {
-      field: "progression",
-      headerName: "Progression Rule",
-      flex: 1,
-    },
-    {
-      field: "locked",
-      headerName: "Locked",
-      flex: 1,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-          {params.value ? (
-            <Lock className="text-red-500" size={18} />
-          ) : (
-            <Unlock className="text-green-500" size={18} />
-          )}
-          <Switch
-            checked={params.value}
-            onChange={() => handleToggleLock(params.row._id)}
-            size="small"
-          />
-        </Box>
-      ),
-    },
-    {
-      field: "createdAt",
-      headerName: "Created At",
-      flex: 1,
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Box display="flex" gap={1}>
-          <Tooltip title="Edit Progression Rule">
-            <IconButton
-              color="primary"
-              size="small"
-              onClick={() => setProgressionModal(params.row as Tier)}
-            >
-              <Edit2 size={16} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete Tier">
-            <IconButton
-              color="error"
-              size="small"
-              onClick={() => setDeleteTier(params.row as Tier)}
-            >
-              <Trash2 size={16} />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ],
-  []
-);
+          </Box>
+        ),
+      },
+      {
+        field: "createdAt",
+        headerName: "Created At",
+        flex: 1,
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <Box display="flex" gap={1}>
+            <Tooltip title="Edit Progression Rule">
+              <IconButton
+                color="primary"
+                size="small"
+                onClick={() => setProgressionModal(params.row as Tier)}
+              >
+                <Edit2 size={16} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete Tier">
+              <IconButton
+                color="error"
+                size="small"
+                onClick={() => setDeleteTier(params.row as Tier)}
+              >
+                <Trash2 size={16} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
+      },
+    ],
+    []
+  );
 
 
   // ======================= Render =======================

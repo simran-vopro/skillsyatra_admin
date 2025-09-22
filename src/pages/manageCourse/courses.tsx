@@ -10,6 +10,7 @@ import {
   ListItem,
   ListItemText,
   ListItemButton,
+  TextField,
 } from "@mui/material";
 import { Check, Edit2, Eye, Trash2, UserPlus, X } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -38,7 +39,7 @@ export default function CourseManagement() {
 
   // Delete state
   const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
-
+  const [rejectionReason, setRejectionReason] = useState("");
   // Status toggle state
   const [statusChangeCourse, setStatusChangeCourse] = useState<Course | null>(
     null
@@ -83,13 +84,21 @@ export default function CourseManagement() {
   };
 
   // ========================================> approve/reject (dummy for now)
-  const handleConfirmApproval = async () => {
-    console.log(`Course ${approvalCourse?.title} ${approvalAction}d!`);
-    // Here you’ll call API e.g. `${API_PATHS.COURSE_APPROVAL}/${approvalCourse?._id}`
-    refetch();
+  const handleConfirmApproval = (reason?: string) => {
+    if (approvalAction === "approve") {
+      // API call or logic to approve
+      console.log("Approved:", approvalCourse);
+    } else if (approvalAction === "reject") {
+      // API call or logic to reject with reason
+      console.log("Rejected:", approvalCourse, "Reason:", reason);
+    }
+
+    // cleanup
     setApprovalCourse(null);
     setApprovalAction(null);
+    setRejectionReason("");
   };
+
 
   // Dummy students/instructors
   const dummyUsers = [
@@ -164,8 +173,7 @@ export default function CourseManagement() {
         headerName: "Instructor",
         width: 160,
         renderCell: (params) =>
-          `${params.row.instructor?.firstName || ""} ${
-            params.row.instructor?.lastName || ""
+          `${params.row.instructor?.firstName || ""} ${params.row.instructor?.lastName || ""
           }`,
       },
       {
@@ -223,6 +231,74 @@ export default function CourseManagement() {
             </IconButton>
           </Tooltip>
         ),
+      },
+      {
+        field: "approvalStatus",
+        headerName: "Approval Status",
+        width: 140,
+        renderCell: (params) => {
+          const status = params.row.approvalStatus || "pending"; // default to pending
+
+          if (status === "approved") {
+            return (
+              <Box
+                px={1}
+                py={0.5}
+                bgcolor="success.light"
+                color="white"
+                borderRadius="8px"
+                textTransform="capitalize"
+              >
+                Approved
+              </Box>
+            );
+          }
+
+          if (status === "rejected") {
+            return (
+              <Box
+                px={1}
+                py={0.5}
+                bgcolor="error.light"
+                color="white"
+                borderRadius="8px"
+                textTransform="capitalize"
+              >
+                Rejected
+              </Box>
+            );
+          }
+
+          // If pending → show action buttons
+          return (
+            <Box display="flex" gap={1}>
+              <Tooltip title="Approve Course">
+                <IconButton
+                  color="success"
+                  size="small"
+                  onClick={() => {
+                    setApprovalCourse(params.row);
+                    setApprovalAction("approve");
+                  }}
+                >
+                  <Check size={16} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Reject Course">
+                <IconButton
+                  color="error"
+                  size="small"
+                  onClick={() => {
+                    setApprovalCourse(params.row);
+                    setApprovalAction("reject");
+                  }}
+                >
+                  <X size={16} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
       },
       {
         field: "actions",
@@ -382,18 +458,33 @@ export default function CourseManagement() {
         onClose={() => {
           setApprovalCourse(null);
           setApprovalAction(null);
+          setRejectionReason(""); // reset when closing
         }}
-        onConfirm={handleConfirmApproval}
-        title={`Confirm ${
-          approvalAction === "approve" ? "Approval" : "Rejection"
-        }`}
+        onConfirm={() => handleConfirmApproval(rejectionReason)}
+        title={`Confirm ${approvalAction === "approve" ? "Approval" : "Rejection"}`}
         description={
           <>
-            Are you sure you want to <strong>{approvalAction}</strong> course{" "}
-            <strong>{approvalCourse?.title}</strong>?
+            <p>
+              Are you sure you want to{" "}
+              <strong>{approvalAction}</strong> course{" "}
+              <strong>{approvalCourse?.title}</strong>?
+            </p>
+
+            {approvalAction === "reject" && (
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                margin="normal"
+                label="Reason for Rejection"
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+              />
+            )}
           </>
         }
       />
+
 
       {/* Assign Drawer */}
       <Drawer
