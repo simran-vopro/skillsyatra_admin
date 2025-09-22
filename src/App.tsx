@@ -28,6 +28,7 @@ import PaymentsPage from "./pages/managePayments/payments";
 import SupportTicketsPage from "./pages/supportTickets/supportTicketsPage";
 import AnnouncementManagementPage from "./pages/AnnouncementManagement/announcements";
 import EarningsFinancePage from "./pages/managePayments/earnings";
+import ForumModerationPage from "./pages/forum/ForumModeration";
 
 export default function App() {
   return (
@@ -70,6 +71,7 @@ export default function App() {
 
             <Route path="/subAdmins" element={<AdminManagement />} />
             <Route path="/managePermissions" element={<SubAdminPermissions />} />
+            <Route path="/forums" element={<ForumModerationPage />} />
           </Route>
         </Route>
 

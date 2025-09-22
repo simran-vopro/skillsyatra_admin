@@ -89,8 +89,10 @@ const AppSidebar: React.FC = () => {
   const system: NavItem[] = useMemo(
     () =>
       [
+        { icon: <Users />, name: "Forum Moderation", path: "/forums" },
         { icon: <Users />, name: "Support Tickets", path: "/tickets" },
         { icon: <Users />, name: "Audit Logs & Activities", path: "/audit" },
+        
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
     [adminUser]
   );
