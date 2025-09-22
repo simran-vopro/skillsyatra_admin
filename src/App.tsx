@@ -23,6 +23,11 @@ import StudentDetails from "./pages/manageStudents/studentDetails";
 import SubmissionPage from "./pages/manageStudents/submissionPage";
 import AdminManagement from "./pages/manageAdmins/admin";
 import SubAdminPermissions from "./pages/manageAdmins/permissions";
+import AchievementsPage from "./pages/manageAchievements/AchievementsPage";
+import PaymentsPage from "./pages/managePayments/payments";
+import SupportTicketsPage from "./pages/supportTickets/supportTicketsPage";
+import AnnouncementManagementPage from "./pages/AnnouncementManagement/announcements";
+import EarningsFinancePage from "./pages/managePayments/earnings";
 
 export default function App() {
   return (
@@ -44,11 +49,23 @@ export default function App() {
             <Route path="/addInstructor" element={<InstructorCreate />} />
 
             <Route path="/tiers" element={<TierPathwayControl />} />
-            <Route path="/practicals" element={<PracticalCalendarManagement />} />
+            <Route
+              path="/practicals"
+              element={<PracticalCalendarManagement />}
+            />
 
             <Route path="/students" element={<StudentsManagement />} />
             <Route path="/studentCreate" element={<StudentCreate />} />
             <Route path="/studentDetails" element={<StudentDetails />} />
+
+            <Route path="/certificates" element={<AchievementsPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+
+            <Route path="/tickets" element={<SupportTicketsPage />} />
+
+            <Route path="/announcements" element={<AnnouncementManagementPage />} />
+            <Route path="/finance" element={<EarningsFinancePage />} />
+
             <Route path="/studentSubmissions" element={<SubmissionPage />} />
 
             <Route path="/subAdmins" element={<AdminManagement />} />

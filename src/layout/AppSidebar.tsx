@@ -13,6 +13,7 @@ import {
   Diamond,
   ListIcon,
   Settings,
+  Speaker,
   User,
   Users,
 } from "lucide-react";
@@ -67,7 +68,9 @@ const AppSidebar: React.FC = () => {
 
   const finance: NavItem[] = useMemo(
     () =>
-      [{ icon: <CreditCard />, name: "Payments & Bills", path: "/payments" }].filter(
+      [{ icon: <CreditCard />, name: "Payments & Bills", path: "/payments" },
+        { icon: <CreditCard />, name: "Earnings & Finance", path: "/finance" }
+      ].filter(
         (item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true
       ),
     [adminUser]
@@ -76,6 +79,7 @@ const AppSidebar: React.FC = () => {
   const reports: NavItem[] = useMemo(
     () =>
       [
+        { icon: <Speaker />, name: "Announcement Management", path: "/announcements" },
         { icon: <ListIcon />, name: "Certificates & Achievements", path: "/certificates" },
         { icon: <Diamond />, name: "Reports & Analytics", path: "/reports" },
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
