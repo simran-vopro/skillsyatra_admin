@@ -9,6 +9,8 @@ import {
 import { useSidebar } from "../context/SidebarContext";
 import {
   Calendar,
+  ChartArea,
+  CopyPlusIcon,
   CreditCard,
   Diamond,
   ListIcon,
@@ -59,6 +61,7 @@ const AppSidebar: React.FC = () => {
   const administration: NavItem[] = useMemo(
     () =>
       [
+        { icon: <CopyPlusIcon />, name: "Manage Promo Codes", path: "/promoCodes" },
         { icon: <TableIcon />, name: "Tier Pathway Control", path: "/tiers" },
         { icon: <TableIcon />, name: "Manage Sub Admins", path: "/subAdmins" },
         { icon: <Calendar />, name: "Practical Scheduling", path: "/practicals" },
@@ -69,7 +72,7 @@ const AppSidebar: React.FC = () => {
   const finance: NavItem[] = useMemo(
     () =>
       [{ icon: <CreditCard />, name: "Payments & Bills", path: "/payments" },
-        { icon: <CreditCard />, name: "Earnings & Finance", path: "/finance" }
+      { icon: <CreditCard />, name: "Earnings & Finance", path: "/finance" }
       ].filter(
         (item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true
       ),
@@ -89,10 +92,11 @@ const AppSidebar: React.FC = () => {
   const system: NavItem[] = useMemo(
     () =>
       [
+        { icon: <ChartArea />, name: "Chat Portal", path: "/chats" },
         { icon: <Users />, name: "Forum Moderation", path: "/forums" },
         { icon: <Users />, name: "Support Tickets", path: "/tickets" },
         { icon: <Users />, name: "Audit Logs & Activities", path: "/audit" },
-        
+
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
     [adminUser]
   );
@@ -100,8 +104,8 @@ const AppSidebar: React.FC = () => {
   const user: NavItem[] = useMemo(
     () =>
       [
-        { icon: <User />, name: "Manage Profile", path: "/profile" },
         { icon: <Settings />, name: "System Settings", path: "/settings" },
+        { icon: <User />, name: "Manage Profile", path: "/profile" },
       ].filter((item) => adminUser?.type === "instructor" ? !blocked.includes(item.name) : true),
     [adminUser]
   );

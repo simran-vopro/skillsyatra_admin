@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Trash } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquare, Trash } from "lucide-react";
 import Input from "../../components/form/input/InputField";
 import TextArea from "../../components/form/input/TextArea";
 import Select from "../../components/form/input/SelectField";
@@ -14,6 +14,7 @@ import DropzoneComponent from "../../components/form/form-elements/DropZone";
 import { useAuth } from "../../hooks/useAuth";
 import { useLocation, useNavigate } from "react-router";
 import TextEditor from "../texteditor";
+import { Box, Drawer, Typography } from "@mui/material";
 
 
 const enhanceListStyling = (html: string) => {
@@ -393,7 +394,6 @@ export default function CourseCreate() {
 
   const buildCourseFormData = (course: Course, courseStatus: string) => {
 
-    console.log("courseStatus ==> ", courseStatus);
     const formData = new FormData();
 
     // Top-level fields
@@ -528,7 +528,6 @@ export default function CourseCreate() {
     const apiCall = course._id ? editCourseRequest : addCourseRequest;
 
     const { success, data } = await apiCall({ body: formData });
-    console.log(success, data)
 
     if (success && data?._id && !course._id) {
       setCourse((prev) => ({
@@ -661,10 +660,13 @@ export default function CourseCreate() {
     );
   }
 
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold mb-2 text-gray-800 dark:text-white mb-5">
-        Create Course
+        {courseId ? "Update Course" : "Create New Course"}  
       </h2>
 
       {/* Step Tabs */}
@@ -800,7 +802,18 @@ export default function CourseCreate() {
       {/* Step 2: Category */}
       {step === 2 && (
         <section className="rounded-xl p-4  bg-white dark:bg-black text-xs space-y-2">
-          <Label>Category</Label>
+
+          <div className="flex items-center justify-between space-x-2">
+            <Label>Category</Label>
+            <div onClick={() => setDrawerOpen(true)} className="flex items-center space-x-1 cursor-pointer">
+              <MessageSquare className="text-red-500" />
+            </div>
+          </div>
+
+
+
+
+
           <div className="relative">
             <input
               type="text"
@@ -843,12 +856,24 @@ export default function CourseCreate() {
                 ))}
               </ul>
             )}
+
+            <p className="text-red-500 mt-3 text-[13px]">The selected category does not seem relevant. Please ensure the course is placed in the most appropriate category (e.g., "Office Communication")</p>
           </div>
         </section>
       )}
 
       {step === 3 && (
+
+
         <section className="rounded-xl  bg-white dark:bg-black p-4 text-xs space-y-2">
+
+          <div className="flex items-center justify-between space-x-2">
+            <Label>Add Comments</Label>
+            <div onClick={() => setDrawerOpen(true)} className="flex items-center space-x-1 cursor-pointer">
+              <MessageSquare className="text-red-500" />
+            </div>
+          </div>
+
           {[
             { label: "Title", value: course.title, field: "title" },
             {
@@ -912,6 +937,12 @@ export default function CourseCreate() {
 
       {step === 4 && (
         <section className="rounded-xl p-4 bg-white dark:bg-black text-xs space-y-4">
+          <div className="flex items-center justify-between space-x-2">
+            <Label>Add Comments</Label>
+            <div onClick={() => setDrawerOpen(true)} className="flex items-center space-x-1 cursor-pointer">
+              <MessageSquare className="text-red-500" />
+            </div>
+          </div>
           {course.modules.map((mod, mIdx) => (
             <details
               key={mIdx}
@@ -1430,6 +1461,12 @@ export default function CourseCreate() {
       {/* Step 4: Metadata */}
       {step === 5 && (
         <section className="rounded-xl  bg-white dark:bg-black p-4 text-xs space-y-4">
+          <div className="flex items-center justify-between space-x-2">
+            <Label>Add Comments</Label>
+            <div onClick={() => setDrawerOpen(true)} className="flex items-center space-x-1 cursor-pointer">
+              <MessageSquare className="text-red-500" />
+            </div>
+          </div>
           <div className="flex flex-col col-span-full mb-15">
             <Label>
               What You’ll Learn <span className="text-error-500">*</span>
@@ -1502,6 +1539,12 @@ export default function CourseCreate() {
 
       {step === 6 && (
         <section className="rounded-xl p-4 bg-white dark:bg-black text-xs space-y-2">
+          <div className="flex items-center justify-between space-x-2">
+            <Label>Add Comments</Label>
+            <div onClick={() => setDrawerOpen(true)} className="flex items-center space-x-1 cursor-pointer">
+              <MessageSquare className="text-red-500" />
+            </div>
+          </div>
           <Label>
             Pricing Type <span className="text-error-500">*</span>
           </Label>
@@ -1530,6 +1573,7 @@ export default function CourseCreate() {
 
       {step === 7 && course && (
         <section className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800 text-sm space-y-6">
+          
           <h2 className="text-xl font-semibold border-b pb-2">
             Course Overview
           </h2>
@@ -1711,6 +1755,30 @@ export default function CourseCreate() {
           </Button>
         </section>
       )}
+
+
+      {/* Drawer */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        PaperProps={{ sx: { width: 400 } }}
+      >
+        <Box p={3}>
+          <Typography variant="h6" mb={2}>
+            Add comments to instructor
+          </Typography>
+
+          <textarea
+            className="w-full h-40 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            placeholder="Add Comments...."
+
+          />
+          <Button className="mt-4 bg-sky-600" onClick={() => setDrawerOpen(false)}>
+            Add
+          </Button>
+        </Box>
+      </Drawer>
 
       <div className="flex justify-between mt-4 text-xs">
         <Button variant="outline" onClick={prev} disabled={step === 1}>

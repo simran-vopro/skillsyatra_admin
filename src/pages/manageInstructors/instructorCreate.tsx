@@ -11,6 +11,7 @@ import { useState } from "react";
 import { Instructor } from "../../types/course";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router";
+import DropzoneComponent from "../../components/form/form-elements/DropZone";
 
 
 export default function InstructorCreate() {
@@ -61,6 +62,10 @@ export default function InstructorCreate() {
 
   }
 
+
+  const [value, setValue] = useState<File | string | null>(null);
+
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold mb-2 text-gray-800 dark:text-white mb-5">
@@ -87,6 +92,18 @@ export default function InstructorCreate() {
               />
             </div>
           ))}
+
+
+          <DropzoneComponent
+            accept={{ "image/*": [".jpg", ".jpeg", ".png"] }}
+            label="Upload Identity Verification Documents"
+            helperText="Please upload a valid government-issued ID (e.g., Passport, Driver’s License, National ID). Supported formats: .jpg, .jpeg, .png."
+            previewFile={value}
+            onDrop={(files: File[]) => {
+              const file = files[0];
+              setValue(file);
+            }}
+          />
         </form>
         <div className="flex mt-4 text-xs gap-3">
           <Button variant="outline">

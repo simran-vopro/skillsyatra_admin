@@ -67,6 +67,7 @@ export default function TierPathwayControl() {
       locked: true,
       createdAt: "2025-09-12",
     },
+
   ]);
 
   const [deleteTier, setDeleteTier] = useState<Tier | null>(null);
@@ -159,6 +160,29 @@ export default function TierPathwayControl() {
         headerName: "Progression Rule",
         flex: 1,
       },
+      // {
+      //   field: "roles",
+      //   headerName: "Applicable Roles",
+      //   flex: 1,
+      //   renderCell: (params) => (
+      //     <Box display="flex" gap={1} flexWrap="wrap">
+      //       {params.value.map((r: string, idx: number) => (
+      //         <Chip key={idx} label={r} size="small" color="secondary" />
+      //       ))}
+      //     </Box>
+      //   ),
+      // },
+      {
+        field: "creditPoints",
+        headerName: "Credits",
+        flex: 1,
+      },
+      {
+        field: "minScore",
+        headerName: "Min Score (%)",
+        flex: 1,
+      },
+
       {
         field: "locked",
         headerName: "Visibility",
@@ -344,11 +368,12 @@ export default function TierPathwayControl() {
         anchor="right"
         open={addTierModal}
         onClose={() => setAddTierModal(false)}
-        PaperProps={{ sx: { width: 400, p: 3 } }}
+        PaperProps={{ sx: { width: 450, p: 3 } }}
       >
         <Box display="flex" flexDirection="column" height="100%" gap={3}>
           <Typography variant="h6">Add New Tier</Typography>
 
+          {/* Tier Name */}
           <TextField
             fullWidth
             label="Tier Name"
@@ -357,6 +382,37 @@ export default function TierPathwayControl() {
             error={!!errors.tierName}
             helperText={errors.tierName}
           />
+
+          {/* Tier Description */}
+          <TextField
+            fullWidth
+            label="Tier Description"
+            multiline
+            minRows={2}
+            placeholder="Short description of this tier..."
+          />
+
+          {/* Category */}
+          <FormControl fullWidth>
+            <InputLabel>Category</InputLabel>
+            <Select defaultValue="Beginner">
+              <MenuItem value="Beginner">Beginner</MenuItem>
+              <MenuItem value="Intermediate">Intermediate</MenuItem>
+              <MenuItem value="Advanced">Advanced</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Applicable Roles */}
+          <FormControl fullWidth>
+            <InputLabel>Applicable Roles</InputLabel>
+            <Select multiple defaultValue={["Student"]}>
+              <MenuItem value="Student">Student</MenuItem>
+              <MenuItem value="Instructor">Instructor</MenuItem>
+              <MenuItem value="Sub Admin">Sub Admin</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Courses Multi-Select */}
           <TextField
             fullWidth
             label="Courses (comma-separated)"
@@ -365,6 +421,24 @@ export default function TierPathwayControl() {
             error={!!errors.courses}
             helperText={errors.courses}
           />
+
+          {/* Credit Points */}
+          <TextField
+            fullWidth
+            type="number"
+            label="Credit Points"
+            placeholder="e.g. 50"
+          />
+
+          {/* Unlock Criteria */}
+          <TextField
+            fullWidth
+            type="number"
+            label="Minimum Score Required (%)"
+            placeholder="e.g. 70"
+          />
+
+          {/* Lock Switch */}
           <Box display="flex" alignItems="center" gap={2}>
             <span>Locked:</span>
             <Switch
@@ -373,6 +447,7 @@ export default function TierPathwayControl() {
             />
           </Box>
 
+          {/* Actions */}
           <Box mt="auto" display="flex" justifyContent="flex-end" gap={2}>
             <Button variant="outline" onClick={() => setAddTierModal(false)}>
               Cancel
@@ -383,6 +458,7 @@ export default function TierPathwayControl() {
           </Box>
         </Box>
       </Drawer>
+
     </div>
   );
 }

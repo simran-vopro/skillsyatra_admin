@@ -29,6 +29,14 @@ import SupportTicketsPage from "./pages/supportTickets/supportTicketsPage";
 import AnnouncementManagementPage from "./pages/AnnouncementManagement/announcements";
 import EarningsFinancePage from "./pages/managePayments/earnings";
 import ForumModerationPage from "./pages/forum/ForumModeration";
+import AdminCreate from "./pages/manageAdmins/adminCreate";
+import ReportsAnalytics from "./pages/ReportsAnalytics/reportsAnalytics";
+import AuditLogsPage from "./pages/activities/Activities";
+import UserProfiles from "./pages/UserProfiles";
+import SystemSettingsPage from "./pages/settings/SystemSettings";
+import SuperAdminChatPortal from "./pages/chats/ChatPortal";
+import DemoCodeDashboard from "./pages/PromoCodesManagement/DemoCodeManager";
+
 
 export default function App() {
   return (
@@ -50,10 +58,7 @@ export default function App() {
             <Route path="/addInstructor" element={<InstructorCreate />} />
 
             <Route path="/tiers" element={<TierPathwayControl />} />
-            <Route
-              path="/practicals"
-              element={<PracticalCalendarManagement />}
-            />
+            <Route path="/practicals" element={<PracticalCalendarManagement />} />
 
             <Route path="/students" element={<StudentsManagement />} />
             <Route path="/studentCreate" element={<StudentCreate />} />
@@ -72,6 +77,20 @@ export default function App() {
             <Route path="/subAdmins" element={<AdminManagement />} />
             <Route path="/managePermissions" element={<SubAdminPermissions />} />
             <Route path="/forums" element={<ForumModerationPage />} />
+            <Route path="/addAdmin" element={<AdminCreate />} />
+
+            <Route path="/reports" element={<ReportsAnalytics />} />
+
+            <Route path="/audit" element={<AuditLogsPage />} />
+
+            <Route path="/profile" element={<UserProfiles />} />
+
+            <Route path="/settings" element={<SystemSettingsPage />} />
+
+            <Route path="/chats" element={<SuperAdminChatPortal />} />
+
+            <Route path="/promoCodes" element={<DemoCodeDashboard />} />
+
           </Route>
         </Route>
 
